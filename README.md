@@ -185,7 +185,12 @@ or container names).
 
 ## Contributing
 
-Contributions are welcome: open an issue, or fork the repository and send a pull request to `main`.
+Contributions are welcome. `main` is the release branch (what users clone); work happens on `dev`.
+
+1. Open an issue, or pick one, so we agree on the change first.
+2. Fork the repository and branch from `dev`: `git switch dev && git switch -c my-change`.
+3. Open the pull request **against `dev`** (in the pull request, set *base: dev*). A pull request
+   into `main` fails its checks by design; only `dev` is merged into `main`, by the maintainer.
 
 ```bash
 ./install.sh --dev && source .venv/bin/activate && pre-commit install
@@ -205,8 +210,9 @@ ADVIEWER_E2E=1 pytest tests/e2e                       # Online mode end to end (
   `src/adviewer/probe_launch.py` and the `adviewer.probe` label in its Dockerfile.
 - A new Autoware release: add `src/adviewer/data/autoware-<release>/`; the schemas in
   `src/adviewer/data/schema/` check it. Verify every fact in that release's source.
-- Releases: set `__version__` in `src/adviewer/__init__.py`, then push a tag `v<version>`; the
-  release workflow checks, builds and publishes it.
+- Releases (maintainer): set `__version__` in `src/adviewer/__init__.py` on `dev`, open a pull request
+  `dev` → `main`, merge it when CI is green, then tag `main` with `v<version>`; the release workflow
+  checks, builds and publishes it.
 
 ## Security
 

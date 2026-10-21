@@ -14,6 +14,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pr-target:
+    name: pull requests go to dev
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: only this repository's dev branch is merged into main
+        if: github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "::error::Please open the pull request against the dev branch: main is the release branch."
+          exit 1
+      - run: echo "dev into main"
+
   lint:
     runs-on: ubuntu-latest
     steps:
