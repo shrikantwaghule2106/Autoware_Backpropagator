@@ -1,5 +1,6 @@
 """`adviewer probe run` across setups (D32): the docker command for each way of joining Autoware."""
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -117,6 +118,7 @@ def test_probe_image_must_be_current(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     assert probe_launch.probe_install("new", tmp_path) == first and len(calls) == n + 1  # cached: only the id lookup
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="--native runs on Linux: POSIX paths and bash quoting")
 def test_native_build_and_run(tmp_path: Path) -> None:
     from adviewer.probe_launch import native_build_script, native_run, native_setups
 

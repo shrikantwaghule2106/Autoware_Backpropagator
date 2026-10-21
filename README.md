@@ -13,13 +13,13 @@ Autoware's interfaces onto a simulator (e.g. CARLA) or real hardware.
 | | Works with | Tested on |
 |---|---|---|
 | Autoware | **1.9.0** (its release data is included); other releases load, with warnings | 1.9.0 |
-| Python | 3.10 – 3.13 | 3.12 (CI runs 3.10, 3.12 and 3.13) |
-| Offline mode | Linux; Windows and macOS should work (pure Python) | Ubuntu 24.04 |
+| Python | 3.10 – 3.13 | 3.10, 3.12, 3.13: the test suite in CI on Linux, macOS and Windows |
+| Offline mode | Linux, Windows, macOS (pure Python) | Ubuntu 24.04 by hand; Windows and macOS through the test suite in CI |
 | Online mode | Linux with Docker Engine; Windows and macOS (Docker Desktop) only with `--like` | Ubuntu 24.04, Docker 29 |
-| ROS 2 (Online) | Jazzy (default), Humble; CI also builds the probe on Kilted, Lyrical and Rolling | Jazzy with Autoware 1.9.0; Humble with a test publisher |
+| ROS 2 (Online) | Jazzy (default), Humble, Kilted, Lyrical, Rolling | Jazzy with Autoware 1.9.0; on all five, CI builds the probe and measures a test publisher |
 | DDS (Online) | CycloneDDS, Fast DDS | both |
 
-**Not tested yet:** real Windows and macOS machines · a Humble, Kilted or Rolling Autoware ·
+**Not tested yet:** Windows and macOS by hand (only CI) · a Humble, Kilted or Rolling Autoware ·
 `--native` on a real host-built Autoware (only a stand-in) · Online mode on Windows and macOS
 (Docker Desktop, `--like` only) · Zenoh · the "lidar + 3 cameras" load comparison on a full Autoware.
 The installer is tested on Ubuntu 22.04 and 24.04, Debian 12 and Fedora 41 (fresh containers).
