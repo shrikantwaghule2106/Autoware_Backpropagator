@@ -1,0 +1,26 @@
+# Autoware release this folder describes, and how ingest recognises it: every package
+# listed under `detect` must be present with exactly this <version> in its package.xml.
+release: "1.9.0"
+image: ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy-1.9.0
+# its compressed size (amd64), from the registry manifest on 2026-10-21: 5.03 GB in 24 layers
+image_download_gb: 5.0
+ros_distro: jazzy
+detect:
+  autoware_launch: "0.52.0"   # launcher/autoware_launch at tag 1.9.0
+# Python launch files that loop over a YAML file and cannot be read statically; adviewer
+# reproduces them (ingest/launch_emulators.py), only for the releases listed here.
+launch_emulators:
+  - component_state_monitor
+# Source companion (D13): the repos adviewer reads C++ / READMEs from, at the tags of this
+# release (from repositories/autoware.repos at tag 1.9.0; checked against the owner's
+# clones 2026-10-16). `adviewer fetch-source` clones them shallowly into these paths.
+source_repos:
+  - {path: core/autoware_core, url: https://github.com/autowarefoundation/autoware_core.git, version: "1.9.0"}
+  - {path: core/autoware_msgs, url: https://github.com/autowarefoundation/autoware_msgs.git, version: "1.13.0"}
+  - {path: core/autoware_adapi_msgs, url: https://github.com/autowarefoundation/autoware_adapi_msgs.git, version: "1.9.2"}
+  - {path: core/autoware_internal_msgs, url: https://github.com/autowarefoundation/autoware_internal_msgs.git, version: "1.13.0"}
+  - {path: universe/autoware_universe, url: https://github.com/autowarefoundation/autoware_universe.git, version: "0.52.0"}
+  - {path: universe/external/tier4_autoware_msgs, url: https://github.com/tier4/tier4_autoware_msgs.git, version: "v0.70.0-rc"}
+  - {path: launcher/autoware_launch, url: https://github.com/autowarefoundation/autoware_launch.git, version: "0.52.0"}
+# Where the official image keeps its install space, for `adviewer extract`.
+image_prefix: /opt/autoware

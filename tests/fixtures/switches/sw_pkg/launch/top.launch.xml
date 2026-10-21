@@ -1,0 +1,11 @@
+<launch>
+  <arg name="launch_perception" default="true"/>
+  <arg name="launch_radar" default="false"/>
+  <group if="$(var launch_perception)">
+    <include file="$(find-pkg-share sw_pkg)/launch/perception.launch.xml">
+      <arg name="launch_perception" value="$(var launch_perception)"/>
+    </include>
+  </group>
+  <node pkg="sw_pkg" exec="radar" name="radar_tracker" if="$(var launch_radar)"/>
+  <include file="$(find-pkg-share sw_pkg)/launch/py_part.launch.py"/>
+</launch>

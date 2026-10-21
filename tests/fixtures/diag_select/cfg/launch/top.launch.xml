@@ -1,0 +1,6 @@
+<launch>
+  <arg name="graph_path" default="$(find-pkg-share cfg)/config/main.yaml"/>
+  <include file="$(find-pkg-share autoware_diagnostic_graph_aggregator)/launch/aggregator.launch.xml">
+    <arg name="graph_file" value="$(var graph_path)"/>
+  </include>
+</launch>

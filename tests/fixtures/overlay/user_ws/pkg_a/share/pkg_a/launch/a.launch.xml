@@ -1,0 +1,1 @@
+<launch><node pkg="pkg_a" exec="x" name="from_overlay"/></launch>

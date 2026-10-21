@@ -1,0 +1,22 @@
+# Same shape as autoware_launch/config/control/preset/default_preset.yaml
+launch:
+  - arg:
+      name: use_feature
+      default: true
+  - arg:
+      name: mode
+      default: "fast"
+  - group:
+      scoped: "true"
+      children:
+        - push-ros-namespace:
+            namespace: control
+        - node:
+            pkg: yaml_top
+            exec: checker
+            name: checker
+            remap:
+              - from: ~/input/trajectory
+                to: /planning/trajectory
+              - from: ~/output/status
+                to: /control/checker/status

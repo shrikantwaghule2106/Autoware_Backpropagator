@@ -1,0 +1,7 @@
+<launch>
+  <!-- same shape as tier4_planning_component.launch.xml:43 -->
+  <include file="$(find-pkg-share node_pkg)/launch/node.launch.xml">
+    <arg name="common_param_path" value="$(var config_dir)/common.param.yaml"/>
+    <arg name="speed" value="$(var vehicle_speed)"/>
+  </include>
+</launch>

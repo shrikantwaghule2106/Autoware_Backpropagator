@@ -1,0 +1,24 @@
+# Search aliases (FR-2, NFR-2): typing a key, or the start of one ("lid"), also matches
+# the listed words. Edit freely; a new release copies and adapts this file.
+aliases:
+  lidar: [lidar, pointcloud, velodyne, hesai, nebula, livox, concatenat]
+  camera: [camera, image, traffic_light]
+  imu: [imu, gyro]
+  gnss: [gnss, gps, nav_sat, navsat, ublox]
+  radar: [radar]
+  velocity: [velocity, twist]
+  mrm: [mrm, fail_safe, emergency, operation_mode/availability, command_mode]
+  diagnostics: [diagnostic, diag, topic_state_monitor]
+  localization: [localization, ndt, ekf, pose]
+  perception: [perception, objects, obstacle]
+  planning: [planning, trajectory, route]
+  control: [control, control_cmd]
+  vehicle: [vehicle, steering, gear]
+# Sensor kits (FR-2, FR-4): the launch packages a kit consists of. A node belongs to a kit
+# when the launch file that declares it is in one of these packages.
+sensor_kits:
+  sample_sensor_kit: [sample_sensor_kit_launch, common_sensor_launch]
+  awsim_sensor_kit: [awsim_sensor_kit_launch]
+  awsim_labs_sensor_kit: [awsim_labs_sensor_kit_launch, common_awsim_labs_sensor_launch]
+  carla_sensor_kit: [carla_sensor_kit_launch]
+  single_lidar_sensor_kit: [single_lidar_sensor_kit_launch, single_lidar_common_launch]

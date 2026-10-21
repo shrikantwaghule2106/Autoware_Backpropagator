@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find-pkg-share diag_agg)/launch/diag_agg.launch.xml"/>
+  <include file="$(find-pkg-share mrm_handler)/launch/mrm_handler.launch.xml">
+    <arg name="output_mrm_state" value="/api/fail_safe/mrm_state"/>
+  </include>
+  <include file="$(find-pkg-share missing_pkg)/launch/x.launch.xml"/>
+</launch>

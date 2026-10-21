@@ -1,0 +1,14 @@
+# How a Minimal Risk Maneuver (MRM) is triggered at this release. Every fact was checked
+# in the source (paths relative to ~/autoware-1.9.0/src).
+aggregator_package: autoware_diagnostic_graph_aggregator
+mode_mappings_param: command_mode_mappings   # "{mode: 1002, path: /autoware/modes/autonomous}"
+mode_names: {1001: stop, 1002: autonomous, 1003: local, 1004: remote, 2001: emergency_stop, 2002: comfortable_stop, 2003: pull_over}
+availability_rule: a mode is available only if its diagnostic unit's level is exactly OK
+availability_evidence: universe/autoware_universe/system/autoware_diagnostic_graph_aggregator/src/node/command_mode_mapping.cpp (item.available = unit->level() == OK)
+handler_package: autoware_mrm_handler
+trigger_mode: autonomous
+trigger_rule: MRM starts when the current operation mode is not available, an emergency is held, or the availability message times out
+trigger_evidence: universe/autoware_universe/system/autoware_mrm_handler/src/mrm_handler/mrm_handler_core.cpp:558-561
+behaviour_rule: pull_over if available and use_pull_over; else comfortable_stop if available and use_comfortable_stop; else emergency_stop
+behaviour_evidence: universe/autoware_universe/system/autoware_mrm_handler/src/mrm_handler/mrm_handler_core.cpp:474-492
+chain: [/system/command_mode/availability, /system/operation_mode/availability, /system/fail_safe/mrm_state]

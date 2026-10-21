@@ -1,0 +1,32 @@
+# Weekly and on demand: the offline acceptance tests on the official Autoware 1.9.0 image — the
+# tests that the main CI skips because they need the real tree (about 5 GB compressed image).
+name: autoware-1.9.0
+on:
+  schedule:
+    - cron: "47 3 * * 1"
+  workflow_dispatch:
+permissions: { contents: read }
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: free disk space for the image
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          docker system prune -af > /dev/null
+          df -h /
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
+      - run: python -m pip install -e ".[dev]"
+      - name: install space from the official image (adviewer extract), then remove the image
+        run: |
+          adviewer extract --release 1.9.0 --out "$RUNNER_TEMP/autoware-1.9.0/install-space"
+          docker image rm ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy-1.9.0 || true
+          df -h /
+      - name: source of the same release (adviewer fetch-source)
+        run: adviewer fetch-source --release 1.9.0 --out "$RUNNER_TEMP/autoware-1.9.0/src"
+      - name: acceptance tests on the real tree
+        run: ADVIEWER_AUTOWARE_TREE="$RUNNER_TEMP/autoware-1.9.0" pytest -q -rs tests/test_acceptance_real.py

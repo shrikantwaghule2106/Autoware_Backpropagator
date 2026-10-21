@@ -1,0 +1,4 @@
+units:
+  - path: /a
+    type: and
+    list: test-list

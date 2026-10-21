@@ -1,0 +1,4 @@
+units:
+  - path: /autoware/sensing/lidar
+    type: diag
+    diag: "lidar_driver: status"

@@ -1,0 +1,9 @@
+units:
+  - path: /autoware/localization
+    type: diag
+    node: topic_state_monitor_pose
+    name: localization_topic_status
+  - path: /autoware/obsolete
+    type: diag
+    node: ""
+    name: legacy

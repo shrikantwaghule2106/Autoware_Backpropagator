@@ -1,0 +1,11 @@
+<launch>
+  <arg name="input_availability" default="/system/operation_mode/availability"/>
+  <arg name="output_mrm_state" default="/system/fail_safe/mrm_state"/>
+  <node pkg="mrm_handler" exec="mrm_handler" name="mrm_handler" namespace="system">
+    <remap from="~/input/operation_mode_availability" to="$(var input_availability)"/>
+    <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+    <remap from="~/output/mrm/state" to="$(var output_mrm_state)"/>
+    <remap from="~/output/mrm/emergency_stop/operate" to="/system/mrm/emergency_stop/operate"/>
+    <param name="timeout_operation_mode_availability" value="0.5"/>
+  </node>
+</launch>

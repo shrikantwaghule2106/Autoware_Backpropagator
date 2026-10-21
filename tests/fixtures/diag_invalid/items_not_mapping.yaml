@@ -1,0 +1,6 @@
+units:
+  - just-a-string
+  - path: /b
+    type: or
+    list:
+      - another-string

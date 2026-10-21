@@ -1,0 +1,9 @@
+files:
+  - { path: $(dirname)/sub.yaml }
+units:
+  - path: /autoware/modes/autonomous
+    type: and
+    list:
+      - { type: link, link: /autoware/localization }
+      - { type: link, link: /autoware/obsolete }
+  - { type: remove, path: /autoware/obsolete }

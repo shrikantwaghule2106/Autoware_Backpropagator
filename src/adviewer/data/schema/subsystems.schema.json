@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adviewer/data/subsystems.schema.json",
+  "title": "subsystems.yaml: the output topic that stands for each subsystem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subsystems"
+  ],
+  "properties": {
+    "subsystems": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^/"
+      }
+    }
+  }
+}

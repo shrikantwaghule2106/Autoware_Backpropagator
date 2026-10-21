@@ -1,0 +1,19 @@
+<launch>
+  <include file="$(find-pkg-share yaml_top)/config/preset.yaml"/>
+  <node pkg="yaml_top" exec="user" name="user">
+    <param name="flag" value="$(var use_feature)"/>
+    <param name="mode" value="$(var mode)"/>
+  </node>
+  <group>
+    <include file="$(find-pkg-share yaml_top)/launch/sensor.launch.xml">
+      <arg name="sensor" value="top"/>
+    </include>
+  </group>
+  <group>
+    <include file="$(find-pkg-share yaml_top)/launch/sensor.launch.xml">
+      <arg name="sensor" value="left"/>
+    </include>
+  </group>
+  <include file="$(find-pkg-share yaml_top)/launch/cycle.launch.xml"/>
+  <include file="$(find-pkg-share yaml_top)/config/broken.yaml"/>
+</launch>

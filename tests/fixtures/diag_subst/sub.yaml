@@ -1,0 +1,4 @@
+units:
+  - path: /from_sub
+    type: diag
+    diag: "x: y"

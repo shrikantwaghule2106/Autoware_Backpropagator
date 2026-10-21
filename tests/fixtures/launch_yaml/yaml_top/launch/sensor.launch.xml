@@ -1,0 +1,6 @@
+<launch>
+  <arg name="sensor" default="none"/>
+  <node pkg="yaml_top" exec="driver" name="$(var sensor)_driver">
+    <remap from="~/output/points" to="/sensing/$(var sensor)/points"/>
+  </node>
+</launch>

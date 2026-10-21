@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adviewer/data/release.schema.json",
+  "title": "release.yaml: one Autoware release (image, ROS distribution, source repos)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "release",
+    "image",
+    "ros_distro",
+    "source_repos"
+  ],
+  "properties": {
+    "release": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ros_distro": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image_prefix": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "image_download_gb": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "compressed size of `image` (amd64), for the disk check before `adviewer extract` pulls it"
+    },
+    "detect": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "package -> version that identifies this release"
+    },
+    "launch_emulators": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "source_repos": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "url",
+          "version"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

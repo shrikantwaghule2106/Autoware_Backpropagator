@@ -1,0 +1,44 @@
+[
+  {
+    "Name": "/stack-autoware-1",
+    "Image": "sha256:5f2c0d1e9a7b",
+    "State": {
+      "Running": true
+    },
+    "Config": {
+      "Image": "ghcr.io/autowarefoundation/autoware:universe-cuda-jazzy-1.9.0",
+      "Env": [
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin",
+        "ROS_DISTRO=jazzy",
+        "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp",
+        "ROS_DOMAIN_ID=7",
+        "ROS_LOCALHOST_ONLY=0",
+        "CYCLONEDDS_URI=file:///config/dds/cyclonedds.xml",
+        "DISPLAY=:0"
+      ],
+      "Labels": {
+        "com.docker.compose.project": "stack",
+        "com.docker.compose.service": "autoware"
+      }
+    },
+    "HostConfig": {
+      "NetworkMode": "stack_default",
+      "IpcMode": "shareable"
+    },
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/home/user/stack/config",
+        "Destination": "/config",
+        "RW": true
+      },
+      {
+        "Type": "volume",
+        "Name": "stack_maps",
+        "Source": "/var/lib/docker/volumes/stack_maps/_data",
+        "Destination": "/maps",
+        "RW": true
+      }
+    ]
+  }
+]

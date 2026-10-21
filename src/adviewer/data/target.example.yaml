@@ -1,0 +1,38 @@
+# Target descriptor for the Mapping panel, schema v1 (adviewer/analysis/mapping.py).
+# `adviewer init` writes this file into your project. Copy it to target.yaml, describe what
+# your simulator or hardware provides, and set `target: target.yaml` in adviewer.yaml.
+# This example: what a CARLA 0.9.16 bridge could publish for Autoware's stock sample sensor
+# kit. ros_type is what the bridge publishes; fields/rate/frame describe the CARLA side.
+target: carla-0.9.16-example
+frames: [map, base_link, velodyne_top, imu_link, gnss_link]
+provides:
+  - name: lidar_top_points
+    type_hint: carla.LidarMeasurement
+    ros_type: sensor_msgs/msg/PointCloud2
+    fields: [x, y, z, intensity]
+    rate_hz: 10
+    frame: velodyne_top
+    qos: {reliability: best_effort, durability: volatile}
+  - name: imu_raw
+    type_hint: carla.IMUMeasurement
+    ros_type: sensor_msgs/msg/Imu
+    fields: [accelerometer, gyroscope, compass]
+    rate_hz: 50
+    frame: imu_link
+  - name: gnss_nav_sat_fix
+    type_hint: carla.GnssMeasurement
+    ros_type: sensor_msgs/msg/NavSatFix
+    fields: [latitude, longitude, altitude]
+    rate_hz: 10
+    frame: gnss_link
+  - name: vehicle_velocity_status
+    type_hint: carla.Vehicle.get_velocity
+    ros_type: autoware_vehicle_msgs/msg/VelocityReport
+    fields: [longitudinal_velocity, lateral_velocity, heading_rate]
+    rate_hz: 50
+    frame: base_link
+  - name: initial_pose
+    type_hint: carla.Transform
+    ros_type: geometry_msgs/msg/PoseWithCovarianceStamped
+    fields: [pose]
+    frame: map

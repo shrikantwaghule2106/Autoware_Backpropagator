@@ -1,0 +1,12 @@
+files:
+  - { path: sub.yaml }
+units:
+  - path: /autoware/modes/autonomous
+    type: and
+    list:
+      - { type: link, link: /autoware/localization }
+      - { type: diag, diag: "vehicle_interface: connection" }
+  - path: /autoware/localization
+    type: or
+    list:
+      - { type: diag, diag: "ndt_scan_matcher: scan_matching_status" }

@@ -1,0 +1,24 @@
+<launch>
+  <arg name="planner" default="a"/>
+  <arg name="use_x" default="true"/>
+  <arg name="image_number" default="6"/>
+  <!-- mutually exclusive branches: only planner_a runs -->
+  <group if="$(eval &quot;'$(var planner)' == 'a'&quot;)">
+    <node pkg="cond_pkg" exec="p" name="planner_a"/>
+  </group>
+  <group if="$(eval &quot;'$(var planner)' == 'b'&quot;)">
+    <node pkg="cond_pkg" exec="p" name="planner_b"/>
+  </group>
+  <!-- the GNSS pattern: the same <let> twice, only one applies -->
+  <let name="fix_topic" value="/sensing/gnss/fix_x" if="$(var use_x)"/>
+  <let name="fix_topic" value="/sensing/gnss/fix_y" unless="$(var use_x)"/>
+  <node pkg="cond_pkg" exec="g" name="gnss">
+    <remap from="~/output/fix" to="$(var fix_topic)"/>
+    <remap from="~/output/debug" to="/debug" if="false"/>
+  </node>
+  <node pkg="cond_pkg" exec="c" name="camera8" if="$(eval &quot;$(var image_number)>=8&quot;)"/>
+  <node pkg="cond_pkg" exec="c" name="camera5" if="$(eval &quot;$(var image_number)>=5&quot;)"/>
+  <node pkg="cond_pkg" exec="u" name="undecided" if="$(var not_declared)"/>
+  <node pkg="cond_pkg" exec="e" name="$(env ADVIEWER_UNSET_VAR envnode)"/>
+  <include file="$(find-pkg-share cond_pkg)/launch/never.launch.xml" if="false"/>
+</launch>

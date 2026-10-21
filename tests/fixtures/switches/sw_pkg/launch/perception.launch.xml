@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="sw_pkg" exec="detector" name="detector"/>
+  <node pkg="sw_pkg" exec="tracker" name="tracker"/>
+</launch>

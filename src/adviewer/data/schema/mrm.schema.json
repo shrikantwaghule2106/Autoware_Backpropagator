@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adviewer/data/mrm.schema.json",
+  "title": "mrm.yaml: how the diagnostic graph and the MRM handler decide (with evidence)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "aggregator_package",
+    "handler_package",
+    "trigger_mode",
+    "chain",
+    "mode_names"
+  ],
+  "properties": {
+    "aggregator_package": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode_mappings_param": {
+      "type": "string",
+      "minLength": 1
+    },
+    "availability_rule": {
+      "type": "string",
+      "minLength": 1
+    },
+    "availability_evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "handler_package": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trigger_mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trigger_rule": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trigger_evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "behaviour_rule": {
+      "type": "string",
+      "minLength": 1
+    },
+    "behaviour_evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode_names": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[0-9]+$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^/"
+      }
+    }
+  }
+}

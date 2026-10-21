@@ -1,0 +1,4 @@
+units:
+  - path: /autoware/modes/autonomous
+    type: or
+

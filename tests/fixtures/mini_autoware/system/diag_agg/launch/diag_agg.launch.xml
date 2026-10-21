@@ -1,0 +1,11 @@
+<launch>
+  <group>
+    <push-ros-namespace namespace="system"/>
+    <node pkg="diag_agg" exec="aggregator" name="diagnostic_graph_aggregator">
+      <remap from="~/input/diagnostics" to="/diagnostics"/>
+      <remap from="~/output/availability" to="/system/operation_mode/availability"/>
+      <remap from="~/misc/thing" to="/system/unknown_direction"/>
+      <param from="$(find-pkg-share diag_agg)/config/graph.yaml"/>
+    </node>
+  </group>
+</launch>

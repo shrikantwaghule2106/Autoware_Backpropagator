@@ -1,0 +1,8 @@
+# The output topic that stands for each subsystem in readiness scores.
+# Names checked in the entry-mode graph of 1.9.0.
+subsystems:
+  localization: /localization/kinematic_state
+  perception: /perception/object_recognition/objects
+  planning: /planning/trajectory
+  control: /control/command/control_cmd
+  mrm: /system/fail_safe/mrm_state

@@ -1,0 +1,6 @@
+failure-threshold: warning  # info notes (e.g. a named USER) do not fail
+# Accepted on purpose:
+ignored:
+  - DL3008  # apt package versions are not pinned: ROS 2 packages follow their distribution
+  - DL3002  # the probe image ends as root: adviewer always runs it with --user (your uid)
+  - DL3006  # FROM ${BASE}: the default (ros:jazzy) is a tag; others are chosen by `probe build --base`

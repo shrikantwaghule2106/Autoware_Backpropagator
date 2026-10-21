@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="vel_conv" exec="vel_conv_node" name="vel_conv" namespace="sensing">
+    <remap from="velocity_status" to="/vehicle/status/velocity_status"/>
+    <remap from="twist_with_covariance" to="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
+    <remap from="debug_value" to="/sensing/debug"/>
+  </node>
+</launch>

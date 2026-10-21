@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adviewer/data/layers.schema.json",
+  "title": "layers.yaml: package -> Autoware layer, plus name rules for the rest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packages"
+  ],
+  "properties": {
+    "packages": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "sensing",
+          "localization",
+          "perception",
+          "planning",
+          "control",
+          "vehicle",
+          "system",
+          "map",
+          "common",
+          "api",
+          "evaluator",
+          "simulator",
+          "visualization",
+          "e2e",
+          "launch",
+          "external",
+          "unknown"
+        ]
+      }
+    },
+    "name_rules": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "prefixItems": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "enum": [
+              "sensing",
+              "localization",
+              "perception",
+              "planning",
+              "control",
+              "vehicle",
+              "system",
+              "map",
+              "common",
+              "api",
+              "evaluator",
+              "simulator",
+              "visualization",
+              "e2e",
+              "launch",
+              "external",
+              "unknown"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+files:
+  - { path: $(var graph_dir)/sub.yaml }

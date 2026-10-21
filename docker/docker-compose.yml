@@ -1,0 +1,22 @@
+services:
+  app:
+    build: { context: .., dockerfile: docker/Dockerfile.app }
+    image: adviewer-app:dev
+    ports: ["127.0.0.1:8765:8765"]   # this machine only; see the README's Security section before changing
+    volumes:
+      - ${AUTOWARE_ROOT:-./autoware}:/autoware:ro
+      - ..:/work
+    # First run: docker compose run --rm app ingest --autoware-root /autoware --out graph.json
+
+  probe:                        # C++ live probe (D14); writes ./probe_dump.json
+    build: { context: ../src/adviewer/probe }
+    image: adviewer-probe:dev
+    network_mode: host          # Linux only (Docker Desktop has no host networking)
+    ipc: host
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
+    volumes:
+      - ..:/work
+    command: ["--ros-args", "-p", "output:=/work/probe_dump.json", "-p", "loop:=true"]
+    profiles: ["live"]

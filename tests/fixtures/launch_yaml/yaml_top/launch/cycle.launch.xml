@@ -1,0 +1,3 @@
+<launch>
+  <include file="$(find-pkg-share yaml_top)/launch/cycle.launch.xml"/>
+</launch>

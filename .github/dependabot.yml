@@ -1,0 +1,15 @@
+# Weekly update pull requests for Python and UI dependencies and for the CI actions.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule: { interval: weekly }
+    groups: { python: { patterns: ["*"] } }
+  - package-ecosystem: npm
+    directory: "/ui"
+    schedule: { interval: weekly }
+    groups: { ui: { patterns: ["*"] } }
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule: { interval: weekly }
+    groups: { actions: { patterns: ["*"] } }

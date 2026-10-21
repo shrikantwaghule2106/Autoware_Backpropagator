@@ -1,0 +1,8 @@
+# an alternative config (like autoware-carla.yaml): must not be merged
+units:
+  - path: /autoware/modes/autonomous
+    type: or
+  - path: /autoware/carla_only
+    type: diag
+    node: carla
+    name: x

@@ -1,0 +1,5 @@
+<launch>
+  <arg name="config_dir" default="$(find-pkg-share top_pkg)/config"/>
+  <arg name="vehicle_speed" default="5.0"/>
+  <include file="$(find-pkg-share comp_pkg)/launch/component.launch.xml"/>
+</launch>

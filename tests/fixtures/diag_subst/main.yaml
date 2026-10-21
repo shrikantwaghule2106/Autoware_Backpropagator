@@ -1,0 +1,5 @@
+files:
+  - { path: $(dirname)/sub.yaml }
+units:
+  - path: /main
+    type: and

@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    max_vel: 4.17 # [m/s]
+    nested:
+      gain: [1.0, 2.0]
+/other_node:
+  ros__parameters:
+    max_vel: 99.0

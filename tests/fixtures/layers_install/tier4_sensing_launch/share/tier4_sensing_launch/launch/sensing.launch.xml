@@ -1,0 +1,6 @@
+<launch>
+  <!-- the node's own package is unknown: the layer comes from this launch package -->
+  <node pkg="unindexed_pkg" exec="x" name="driver"/>
+  <node pkg="nebula_ros" exec="x" name="nebula"/>
+  <node pkg="autoware_mrm_handler" exec="x" name="mrm_handler"/>
+</launch>

@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.graph.json
+graph.json
+probe_dump*.json
+/autoware/
+.env
+.DS_Store
+
+# UI build tooling (ui/build.sh); the built UI is committed in src/adviewer/ui/static
+ui/node_modules/
+
+# test coverage output
+.coverage
+htmlcov/
+coverage.xml
