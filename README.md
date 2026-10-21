@@ -15,13 +15,13 @@ Autoware's interfaces onto a simulator (e.g. CARLA) or real hardware.
 | Autoware | **1.9.0** (its release data is included); other releases load, with warnings | 1.9.0 |
 | Python | 3.10 – 3.13 | 3.12 (CI runs 3.10, 3.12 and 3.13) |
 | Offline mode | Linux; Windows and macOS should work (pure Python) | Ubuntu 24.04 |
-| Online mode | Linux, Docker Engine | Ubuntu 24.04, Docker 29 |
+| Online mode | Linux with Docker Engine; Windows and macOS (Docker Desktop) only with `--like` | Ubuntu 24.04, Docker 29 |
 | ROS 2 (Online) | Jazzy (default), Humble; CI also builds the probe on Kilted, Lyrical and Rolling | Jazzy with Autoware 1.9.0; Humble with a test publisher |
 | DDS (Online) | CycloneDDS, Fast DDS | both |
 
 **Not tested yet:** real Windows and macOS machines · a Humble, Kilted or Rolling Autoware ·
-`--native` on a real host-built Autoware (only a stand-in) · Online mode on Docker Desktop (not
-supported: no host network) · Zenoh · the "lidar + 3 cameras" load comparison on a full Autoware.
+`--native` on a real host-built Autoware (only a stand-in) · Online mode on Windows and macOS
+(Docker Desktop, `--like` only) · Zenoh · the "lidar + 3 cameras" load comparison on a full Autoware.
 The installer is tested on Ubuntu 22.04 and 24.04, Debian 12 and Fedora 41 (fresh containers).
 
 ![Offline mode: search a topic and open the next level; Online mode: the Live dashboard finds the root of a rate drop](assets/adviewer-demo.gif)
@@ -82,7 +82,7 @@ You should see `adviewer: read 155 nodes, 284 topics, …` (Autoware 1.9.0) and
 (*Terminal → Run Task → adviewer: up*). Try it: search `concatenated`, pick the point cloud,
 click `+n` to open the next level.
 
-## Online mode: a running Autoware (Linux)
+## Online mode: a running Autoware
 
 **1. Install the probe** (once): `./install.sh --online` in the `Autoware_Backpropagator` folder.
 It builds the C++ probe image and checks Docker, the DDS settings and the kernel buffers.
@@ -95,6 +95,9 @@ It builds the C++ probe image and checks Docker, the DDS settings and the kernel
 | Autoware built on this machine (ROS 2 installed here) | `adviewer probe build --native` once, then `adviewer probe run --native` |
 | Autoware on this machine's host network with default DDS settings | `adviewer probe run` |
 | Message types that only another container has (e.g. a bridge) | a second probe: `--like <that-container> --out .adviewer/bridge_dump.json` |
+| Autoware in Docker Desktop (Windows, macOS) | `adviewer probe run --like <autoware-container>`: the only way there, as Docker Desktop has no host network (untested; the dashboard then has no CPU and memory lines) |
+| Windows with WSL2 (Ubuntu with Docker Engine inside WSL2) | the Linux commands above, inside WSL2 (untested) |
+| Autoware on another Linux machine | run adviewer there (`adviewer up --online`) and open it through an SSH tunnel: `ssh -L 8765:127.0.0.1:8765 <that-machine>`, then http://127.0.0.1:8765 |
 
 You should see `wrote …probe_dump.json: N topics` every 5 seconds. `--like` uses that
 container's image (all its message types), network, IPC and ROS/DDS settings; it builds a probe
@@ -173,7 +176,7 @@ All commands: `adviewer --help` (and `adviewer <command> --help`).
 | topics listed, but large ones (point clouds, images) at 0 Hz | raise the kernel buffers: the commands from `adviewer doctor --online` |
 | `<container> stopped: waiting for it to run again` | nothing to do: the probe joins it again when it is back |
 | `probe image … is older than this adviewer` | nothing to do: it is rebuilt once, by itself |
-| `Docker Desktop (macOS/Windows) has no host network` | use `--like <container>`; Online mode is not supported on Docker Desktop |
+| `Docker Desktop (macOS/Windows) has no host network` | use `--like <container>`: on Docker Desktop the probe can only join Autoware's container (untested) |
 | the Dashboard is empty | keep `probe run` or `up --online` running: a window is recorded every 5 seconds |
 | the probe uses a lot of CPU | measure fewer topics: `--include '^/sensing/'` |
 
