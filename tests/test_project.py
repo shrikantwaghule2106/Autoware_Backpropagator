@@ -176,3 +176,40 @@ def test_probe_hint_when_it_sees_no_topics() -> None:
     assert "--like <container>" in hint and "stack-autoware-1" in hint
     assert "is Autoware running there" in _empty_hint({}, "aw", False, [])
     assert "ROS_DOMAIN_ID" in _empty_hint({}, None, True, [])
+
+
+def test_releases_are_ordered_by_version_and_detected_by_package_versions() -> None:
+    from adviewer.ingest.package_xml import PackageInfo
+    from adviewer.ingest.release_data import available_releases, detect_release, version_key
+    from adviewer.model import Layer
+
+    assert sorted(["1.10.0", "1.9.0", "1.8.0"], key=version_key) == ["1.8.0", "1.9.0", "1.10.0"]  # not as text
+    names = [r.release for r in available_releases()]
+    assert names == sorted(names, key=version_key) and {"1.8.0", "1.9.0"} <= set(names)
+    assert project.release(None).release == names[-1]  # the default: the newest adviewer has data for
+    for release, launch in (("1.8.0", "0.51.0"), ("1.9.0", "0.52.0")):
+        pkgs = {"autoware_launch": PackageInfo("autoware_launch", Path("x"), Layer.unknown, "x", launch)}
+        found = detect_release(pkgs)
+        assert found is not None and found.release == release
+    assert detect_release({"autoware_launch": PackageInfo("autoware_launch", Path("x"), Layer.unknown, "x", "0.1.0")}) is None
+
+
+def test_init_release_is_used_by_fetch_source(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                               capsys: pytest.CaptureFixture[str]) -> None:
+    from adviewer import cli
+
+    monkeypatch.chdir(tmp_path)
+    r = runner.invoke(app, ["init", "--from-source", "--release", "1.8.0"])
+    assert r.exit_code == 0 and "Autoware 1.8.0" in r.output, r.output
+    assert yaml.safe_load((tmp_path / "adviewer.yaml").read_text())["autoware"]["release"] == "1.8.0"
+    clones: list[list[str]] = []
+    monkeypatch.setattr(project, "run", lambda cmd: clones.append(cmd) or 0)
+    r = runner.invoke(app, ["fetch-source"])
+    assert r.exit_code == 0 and "Autoware 1.8.0" in r.output, r.output
+    universe = next(c for c in clones if c[-1].endswith("autoware_universe"))
+    assert universe[universe.index("--branch") + 1] == "0.51.0"  # 1.8.0's tag, not the newest release's
+    monkeypatch.setattr(sys, "argv", ["adviewer", "init", "--release", "0.1.0", "--force"])
+    with pytest.raises(SystemExit) as done:
+        cli.main()
+    err = capsys.readouterr().err
+    assert done.value.code == 1 and "no data for Autoware 0.1.0; it knows 1.8.0, 1.9.0" in err, err

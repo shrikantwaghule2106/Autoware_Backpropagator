@@ -29,9 +29,14 @@ DEFAULT_ENTRY = "autoware_launch/share/autoware_launch/launch/autoware.launch.xm
 TEXT_FILES = ("*.xml", "*.launch.py", "*.yaml", "*.yml", "*.msg", "*.srv", "*.action", "*.json", "*.csv")
 
 
+class ReleaseNotKnown(Exception):
+    """An Autoware release adviewer has no data for; the message lists the ones it has."""
+
+
 @dataclass
 class Project:
     root: Path  # folder holding adviewer.yaml
+    release: str = ""  # Autoware release for extract / fetch-source; "" = the newest adviewer has data for
     install_space: str = "autoware/install"
     source: str = "autoware/src"
     entry_launch: str = DEFAULT_ENTRY  # relative to install_space
@@ -48,7 +53,7 @@ class Project:
 
     def to_yaml(self) -> str:
         data = {
-            "autoware": {"install_space": self.install_space, "source": self.source,
+            "autoware": {"release": self.release, "install_space": self.install_space, "source": self.source,
                          "entry_launch": self.entry_launch, "overlays": self.overlays},
             "graph": self.graph,
             "serve": {"host": self.host, "port": self.port},
@@ -56,6 +61,7 @@ class Project:
             "target": self.target,
         }
         header = ("# adviewer project config (`adviewer init`). Paths are relative to this file.\n"
+                  "# release: the Autoware release for extract / fetch-source ('' = the newest adviewer knows)\n"
                   "# install_space: Autoware's install space (`adviewer extract` copies it from the image),\n"
                   "#   or the source itself (`adviewer init --from-source`: no Docker needed)\n"
                   "# source: the same release's source (`adviewer fetch-source`), optional but recommended\n"
@@ -74,6 +80,7 @@ def load(start: Path | None = None) -> Project:
             serve = data.get("serve") or {}
             return Project(
                 root=folder,
+                release=str(aw.get("release") or ""),
                 install_space=str(aw.get("install_space", "autoware/install")),
                 source=str(aw.get("source") or ""),
                 entry_launch=str(aw.get("entry_launch", DEFAULT_ENTRY)),
@@ -105,14 +112,14 @@ VSCODE_TASKS = {
 }
 
 
-def init(folder: Path, install_space: str, source: str, entry_launch: str, force: bool) -> list[str]:
+def init(folder: Path, install_space: str, source: str, entry_launch: str, force: bool, release: str = "") -> list[str]:
     """Write adviewer.yaml and VS Code tasks; returns what was done (never overwrites without force)."""
     done: list[str] = []
     cfg = folder / CONFIG
     if cfg.exists() and not force:
         done.append(f"kept existing {CONFIG} (use --force to replace it)")
     else:
-        cfg.write_text(Project(folder, install_space, source, entry_launch).to_yaml(), encoding="utf-8")
+        cfg.write_text(Project(folder, release, install_space, source, entry_launch).to_yaml(), encoding="utf-8")
         done.append(f"wrote {CONFIG}")
     tasks = folder / ".vscode" / "tasks.json"
     if tasks.exists():
@@ -145,7 +152,7 @@ def release(name: str | None) -> ReleaseData:
     for r in releases:
         if r.release == name:
             return r
-    raise RuntimeError(f"no data for Autoware {name}; known: {', '.join(r.release for r in releases)}")
+    raise ReleaseNotKnown(f"adviewer has no data for Autoware {name}; it knows {', '.join(r.release for r in releases)}")
 
 
 def extract_command(image: str, out: Path, prefix: str) -> list[str]:

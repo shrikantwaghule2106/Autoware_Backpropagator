@@ -1,0 +1,22 @@
+# Parameters whose value is a topic name, or a list of names, that the node subscribes to
+# or publishes (F12). A launch remap cannot show these topics; the parameter does.
+# Each rule was checked in the package's C++ at this release; `evidence` is that line (relative
+# to `adviewer fetch-source --release 1.8.0`): the four files are identical to 1.9.0's (2026-10-22).
+# Matching: node package + name.
+rules:
+  - package: autoware_pointcloud_preprocessor
+    param: input_topics
+    direction: subscribe
+    evidence: universe/autoware_universe/sensing/autoware_pointcloud_preprocessor/src/concatenate_data/concatenate_and_time_sync_node.cpp:64
+  - package: autoware_topic_state_monitor
+    param: topic
+    direction: subscribe
+    evidence: universe/autoware_universe/system/autoware_topic_state_monitor/src/topic_state_monitor_core.cpp:92
+  - package: autoware_processing_time_checker
+    param: processing_time_topic_name_list
+    direction: subscribe
+    evidence: universe/autoware_universe/system/autoware_processing_time_checker/src/processing_time_checker.cpp:86
+  - package: autoware_probabilistic_occupancy_grid_map
+    param: fusion_input_ogm_topics
+    direction: subscribe
+    evidence: universe/autoware_universe/perception/autoware_probabilistic_occupancy_grid_map/src/fusion/synchronized_grid_map_fusion_node.cpp:106

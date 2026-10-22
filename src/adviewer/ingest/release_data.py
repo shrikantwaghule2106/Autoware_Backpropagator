@@ -58,8 +58,15 @@ def _read(folder: Path) -> ReleaseData:
     return data
 
 
+def version_key(version: str) -> tuple[int, ...]:
+    """Releases compared as numbers, so 1.10.0 comes after 1.9.0."""
+    return tuple(int(part) if part.isdigit() else -1 for part in version.replace("-", ".").split("."))
+
+
 def available_releases() -> list[ReleaseData]:
-    return [_read(d) for d in sorted(DATA_DIR.glob("autoware-*")) if (d / "release.yaml").is_file()]
+    """Every release adviewer has data for, oldest first."""
+    folders = [d for d in DATA_DIR.glob("autoware-*") if (d / "release.yaml").is_file()]
+    return [_read(d) for d in sorted(folders, key=lambda d: version_key(d.name.removeprefix("autoware-")))]
 
 
 def detect_release(packages: dict[str, PackageInfo]) -> ReleaseData | None:

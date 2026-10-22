@@ -1,7 +1,9 @@
-"""Offline acceptance rows of the requirements, on the real pinned tree (1.9.0).
+"""Offline acceptance rows of the requirements, on a real Autoware tree of a supported release.
 
-Skipped where the tree (install space + source companion) is not present: ~/autoware-1.9.0, or
-the folder in ADVIEWER_AUTOWARE_TREE (the weekly CI job extracts it from the official image).
+The tree is ~/autoware-1.9.0 or the folder in ADVIEWER_AUTOWARE_TREE: `install-space/` + `src/`
+(from `adviewer extract` and `fetch-source`), or only `src/` (from `adviewer fetch-source`: no
+Docker; the weekly CI job reads every supported release this way). ADVIEWER_AUTOWARE_RELEASE
+names the release (default 1.9.0). Skipped where no tree is present.
 """
 import os
 import re
@@ -15,21 +17,34 @@ from adviewer.analysis.where_to_edit import find_params
 from adviewer.ingest import ingest_autoware_tree
 from adviewer.ingest.release_data import available_releases
 from adviewer.model import Direction, Graph
+from adviewer.project import DEFAULT_ENTRY
 
-AW = Path(os.environ.get("ADVIEWER_AUTOWARE_TREE") or Path.home() / "autoware-1.9.0")
-ENTRY = AW / "install-space/autoware_launch/share/autoware_launch/launch/autoware.launch.xml"
-pytestmark = pytest.mark.skipif(not ENTRY.is_file(), reason="pinned Autoware 1.9.0 tree not present")
+RELEASE = os.environ.get("ADVIEWER_AUTOWARE_RELEASE", "1.9.0")
+AW = Path(os.environ.get("ADVIEWER_AUTOWARE_TREE") or Path.home() / f"autoware-{RELEASE}")
+INSTALL = AW / "install-space" if (AW / "install-space" / DEFAULT_ENTRY).is_file() else AW / "src"
+pytestmark = pytest.mark.skipif(not (AW / "src").is_dir(), reason=f"no Autoware {RELEASE} tree in {AW}")
 
 
 @pytest.fixture(scope="module")
 def g() -> Graph:
-    return ingest_autoware_tree(AW / "install-space", str(ENTRY), AW / "src")
+    return ingest_autoware_tree(INSTALL, str(INSTALL / DEFAULT_ENTRY), AW / "src")  # entry found by package
 
 
 @pytest.fixture(scope="module")
 def data() -> dict:
-    rel = next(r for r in available_releases() if r.release == "1.9.0")
-    return {"aliases": rel.load("aliases.yaml"), "mrm": rel.load("mrm.yaml")}
+    rel = next(r for r in available_releases() if r.release == RELEASE)
+    return {name: rel.load(f"{name}.yaml") for name in ("aliases", "mrm", "subsystems")}
+
+
+def test_the_release_is_recognised_and_complete(g: Graph, data: dict) -> None:
+    assert g.meta.autoware_release == RELEASE and g.meta.entry_package == "autoware_launch"
+    assert len(g.nodes) > 100 and len(g.diag_units) > 50
+    assert not [n for n in g.nodes.values() if n.layer.value == "unknown"]  # layers.yaml covers every node
+    for topic in [*data["subsystems"]["subsystems"].values(), *data["mrm"]["chain"]]:
+        assert g.publishers(topic), f"{topic}: no publisher at {RELEASE}"
+    in_tree = {m.split("/")[0] for m in g.msg_types}  # message packages read from this tree (ROS's own are not in it)
+    used = {t.msg_type for t in g.topics.values() if t.msg_type and t.msg_type.split("/")[0] in in_tree}
+    assert used and not used - set(g.msg_types)  # e.g. MrmState, kept in a subfolder of its source package
 
 
 def test_search_and_trace_lidar(g: Graph, data: dict) -> None:
@@ -81,5 +96,6 @@ def test_mrm_shows_the_gating_diagnostics(g: Graph, data: dict) -> None:
 def test_where_to_edit_max_velocity(g: Graph) -> None:
     [hit] = [h for h in find_params(g, "max_vel") if h["name"] == "max_vel"]
     assert hit["value"] == "4.17"
-    assert hit["evidence"].endswith("config/planning/scenario_planning/common/common.param.yaml:16")
-    assert any("COPY" in r["how"] for r in hit["routes"])
+    assert re.search(r"autoware_launch/config/planning/scenario_planning/common/common\.param\.yaml:\d+$", hit["evidence"])
+    copy = next(r["how"] for r in hit["routes"] if "COPY" in r["how"])  # also when read from source
+    assert copy.endswith("/opt/autoware/autoware_launch/share/autoware_launch/config/planning/scenario_planning/common/common.param.yaml")

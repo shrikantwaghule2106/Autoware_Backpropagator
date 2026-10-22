@@ -4,10 +4,14 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
 
 from adviewer import __version__
+
+if TYPE_CHECKING:
+    from adviewer.project import Project
 
 
 def _safe_output() -> None:
@@ -197,6 +201,7 @@ def init(
         help="top-level launch file, relative to the install space (found by package in a source tree)"),
     from_source: bool = typer.Option(False, "--from-source", help="read Autoware from its source "
                                      "(`adviewer fetch-source`): no Docker image needed"),
+    release: str = typer.Option("", "--release", help="Autoware release, e.g. 1.8.0 (default: the newest adviewer has data for)"),
     force: bool = typer.Option(False, "--force", help="replace an existing adviewer.yaml"),
     print_tasks: bool = typer.Option(False, "--print-tasks", help="only print the VS Code tasks"),
 ) -> None:
@@ -210,8 +215,12 @@ def init(
         return
     if from_source:
         install_space = source
-    for line in project.init(Path.cwd(), install_space, source, entry_launch, force):
+    if release:
+        project.release(release)  # known? (else one line: the releases adviewer has data for)
+    for line in project.init(Path.cwd(), install_space, source, entry_launch, force, release):
         typer.echo(f"  {line}")
+    typer.echo(f"Autoware {project.release(release or None).release}"
+               + ("" if release else " (the newest adviewer has data for; another: --release)"))
     if from_source:
         typer.echo("next: adviewer fetch-source, then adviewer up")
     else:
@@ -234,11 +243,12 @@ def extract(
 
     from adviewer import doctor, project
 
-    rel = project.release(release)
+    cfg = _project_if_any() if out is not None else project.load()
+    rel = project.release(release or (cfg.release if cfg else "") or None)
     meta = rel.load("release.yaml") or {}
-    if out is None:
-        cfg = project.load()
+    if out is None and cfg is not None:
         out = cfg.path(cfg.install_space)
+    assert out is not None
     img = image or meta["image"]
     docker = doctor.check_docker(doctor.run_command, shutil.which, online=True)[0]
     if docker["status"] == "error":
@@ -297,11 +307,14 @@ def fetch_source(
     """Shallow-clone the source companion of a release (C++, READMEs) at its exact tags."""
     from adviewer import project
 
-    if out is None:
-        cfg = project.load()
+    cfg = _project_if_any() if out is not None else project.load()
+    if out is None and cfg is not None:
         out = cfg.path(cfg.source or "autoware/src")
+    assert out is not None
+    rel = project.release(release or (cfg.release if cfg else "") or None)
+    typer.echo(f"Autoware {rel.release}: its source at the release's tags")
     notes = 0
-    for cmd in project.fetch_source_commands(project.release(release), out):
+    for cmd in project.fetch_source_commands(rel, out):
         folder, version = Path(cmd[-1]), cmd[cmd.index("--branch") + 1]
         if folder.exists():
             problem = project.clone_problem(folder, version)
@@ -313,6 +326,16 @@ def fetch_source(
                        "The clones made so far are kept; run this again to continue.", err=True)
             raise typer.Exit(1)
     typer.echo(f"source ready in {out}" + (f" ({notes} note(s) above)" if notes else ""))
+
+
+def _project_if_any() -> Project | None:
+    """adviewer.yaml here or above, or None (commands given --out work outside a project)."""
+    from adviewer import project
+
+    try:
+        return project.load()
+    except FileNotFoundError:
+        return None
 
 
 def _graph_outdated(graph: Path, inputs: list[Path]) -> str:
@@ -859,11 +882,16 @@ MISSING_TOOL = {
 
 def main() -> None:
     """The `adviewer` command: problems the user can fix end with one line, not a traceback."""
+    from adviewer.project import ReleaseNotKnown
+
     try:
         app()
     except FileNotFoundError as exc:  # no adviewer.yaml here, or docker / git not installed
         tool = Path(str(exc.filename)).name if exc.filename else ""
         typer.echo(f"adviewer: {MISSING_TOOL.get(tool, str(exc))}", err=True)
+        raise SystemExit(1) from None
+    except ReleaseNotKnown as exc:
+        typer.echo(f"adviewer: {exc}", err=True)
         raise SystemExit(1) from None
 
 
