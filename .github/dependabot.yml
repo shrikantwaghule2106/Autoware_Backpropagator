@@ -15,7 +15,10 @@ updates:
     directory: "/ui"
     target-branch: dev
     schedule: { interval: monthly }
-    groups: { ui: { patterns: ["*"], update-types: ["minor", "patch"] } }
+    groups:
+      # React and its types move together, majors too: alone, react and react-dom do not build
+      react: { patterns: ["react", "react-dom", "@types/react", "@types/react-dom"] }
+      ui: { patterns: ["*"], update-types: ["minor", "patch"] }
   - package-ecosystem: github-actions
     directory: "/"
     target-branch: dev
