@@ -172,8 +172,16 @@ class Lock:
         if owner == self.token:
             os.utime(self.path)
         elif not owner or time.time() - mtime > LOCK_STALE:
-            self.path.write_text(self.token, encoding="utf-8")
-            owner = self._owner()[0]  # two takers at once: the last writer wins, the other backs off
+            if owner and self._owner() == (owner, mtime):  # still the same stale owner: clear it
+                self.path.unlink(missing_ok=True)
+            try:  # create-if-absent is atomic: of two recorders starting together, one wins
+                fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            except FileExistsError:
+                pass
+            else:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    f.write(self.token)
+            owner = self._owner()[0]
         self.held = owner == self.token
         return self.held
 
@@ -234,6 +242,9 @@ def _poll(dump: Path, history: Path, sampler: Sampler, max_bytes: int,
         return seen_mtime, seen_stamp, wiring  # replaced while reading: next poll
     if str(data.get("captured_at")) == seen_stamp:
         return mtime, seen_stamp, wiring
+    last = read_history(history, 1)
+    if last and str(last[0].get("t", "")) == str(data.get("captured_at")):  # in the history already
+        return mtime, str(data.get("captured_at")), wiring
     line = window_record(data, sampler.sample())
     now = wiring_of(data)
     if now != wiring:

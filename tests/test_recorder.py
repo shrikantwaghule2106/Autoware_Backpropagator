@@ -108,20 +108,20 @@ def test_one_recorder_per_history_and_takeover(tmp_path: Path) -> None:
     dump, hist = tmp_path / "probe_dump.json", tmp_path / "probe_dump.history.jsonl"
     quiet = Sampler(_proc(tmp_path / "proc", 1, 9), run=lambda cmd: "", which=lambda name: None)
     stops = [threading.Event(), threading.Event()]
-    waits: list[int] = []
+    waits: list[int] = []  # which recorder waits
     threads = [threading.Thread(target=record, args=(dump, hist, stop),
-                                kwargs={"sampler": quiet, "poll": 0.02, "on_wait": lambda: waits.append(1)})
-               for stop in stops]
+                                kwargs={"sampler": quiet, "poll": 0.02, "on_wait": lambda i=i: waits.append(i)})
+               for i, stop in enumerate(stops)]
     _dump(dump, "2026-10-19T10:00:00Z", 1000.0)
     for th in threads:
-        th.start()
+        th.start()  # both at once: the lock is created atomically, so one writes and one waits
     try:
         assert _wait(lambda: len(read_history(hist)) == 1) and _wait(lambda: len(waits) == 1)
         _dump(dump, "2026-10-19T10:00:05Z", 1001.0)
         assert _wait(lambda: len(read_history(hist)) == 2)
-        first = next(i for i, th in enumerate(threads) if th.is_alive())
-        stops[first].set()  # the writer stops (Ctrl+C): the waiting one takes over
-        threads[first].join(5)
+        writer = 1 - waits[0]
+        stops[writer].set()  # the writer stops (Ctrl+C): the waiting one takes over
+        threads[writer].join(5)
         _dump(dump, "2026-10-19T10:00:10Z", 1002.0)
         assert _wait(lambda: len(read_history(hist)) == 3)
     finally:

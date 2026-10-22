@@ -1,18 +1,23 @@
-# Weekly update pull requests for Python and UI dependencies and for the CI actions, into dev.
+# Monthly update pull requests into dev (main only receives dev, through a pull request).
+# Minor and patch updates come grouped; a major version (React, TypeScript, an action) comes in
+# its own pull request, to be checked on its own. Python: our ranges are `>=`, so CI already
+# installs the newest releases on every run; a pull request opens only when a release falls
+# outside a range (and for security updates).
 version: 2
 updates:
   - package-ecosystem: pip
     directory: "/"
-    target-branch: dev   # main only receives dev, through a pull request
-    schedule: { interval: weekly }
+    target-branch: dev
+    schedule: { interval: monthly }
+    versioning-strategy: increase-if-necessary
     groups: { python: { patterns: ["*"] } }
   - package-ecosystem: npm
     directory: "/ui"
-    target-branch: dev   # main only receives dev, through a pull request
-    schedule: { interval: weekly }
-    groups: { ui: { patterns: ["*"] } }
+    target-branch: dev
+    schedule: { interval: monthly }
+    groups: { ui: { patterns: ["*"], update-types: ["minor", "patch"] } }
   - package-ecosystem: github-actions
     directory: "/"
-    target-branch: dev   # main only receives dev, through a pull request
-    schedule: { interval: weekly }
-    groups: { actions: { patterns: ["*"] } }
+    target-branch: dev
+    schedule: { interval: monthly }
+    groups: { actions: { patterns: ["*"], update-types: ["minor", "patch"] } }
