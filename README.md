@@ -109,9 +109,11 @@ the probe: about a fifth of a CPU core per 20 MB/s).
 
 **3. Open the live view:** `adviewer up --online`. The **Online** switch rings every topic green,
 amber or red. The **Dashboard** puts every sensor and layer on one time axis with CPU, GPU and
-memory: start parts of Autoware one by one and, for each change, it names the topic that dropped
-first, the topics that followed and how they are connected to what just started. It reports what
-changed together and how things connect; it does not prove the cause.
+memory: start parts of Autoware one by one. A change is a rate drop of more than 10 %, a stop or a
+worse health that lasts 10 s, within 10 s of a launch or a stop. For each change it names the root,
+the changed topic furthest upstream in the data flow (no other changed topic feeds it), the topics
+that followed, and how the root is connected to what just started. It reports what changed together
+and how things connect; it does not prove the cause.
 `adviewer compare lidar_only.json lidar_and_cameras.json` lists the rates that dropped under load.
 
 ## What it does
