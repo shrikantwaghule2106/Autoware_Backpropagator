@@ -47,10 +47,20 @@ def test_routes_source_layout(graph: Graph) -> None:
     routes = override_routes(p, graph)
     assert routes[0]["route"].startswith("launch argument")
     assert "ros2 launch top_pkg top.launch.xml config_dir:=" in routes[0]["how"]
-    assert routes[-1] == {
-        "route": "source edit",
-        "how": "edit top_pkg/config/common.param.yaml:3, then colcon build --packages-select top_pkg",
-    }
+    assert {"route": "source edit",
+            "how": "edit top_pkg/config/common.param.yaml:3, then colcon build --packages-select top_pkg"} in routes
+    # read from source, Autoware may still run from the official image: where the file is there
+    hows = " | ".join(r["how"] for r in routes)
+    assert "COPY your_copy /opt/autoware/top_pkg/share/top_pkg/config/common.param.yaml" in hows
+    assert "-v $PWD/your_copy:/opt/autoware/top_pkg/share/top_pkg/config/common.param.yaml:ro" in hows
+
+
+def test_installed_path_of_a_source_file() -> None:
+    from adviewer.analysis.where_to_edit import installed_path
+
+    src = "launcher/autoware_launch/autoware_launch/config/planning/common.param.yaml"
+    assert installed_path(src, "autoware_launch") == "/opt/autoware/autoware_launch/share/autoware_launch/config/planning/common.param.yaml"
+    assert installed_path(src, "other_pkg") == "" and installed_path(src, "") == ""
 
 
 def test_routes_install_layout(graph: Graph) -> None:

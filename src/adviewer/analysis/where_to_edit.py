@@ -4,10 +4,11 @@ Routes, most convenient first:
 1. launch argument — when the value (or the file holding it) comes from `$(var X)`, or the
    entry is itself a launch argument: `ros2 launch <pkg> <file> X:=…`. An argument set on
    the command line wins unless an including file passes its own value for it.
-2. install space (Docker image) — files in the image do not persist edits (D13), so the
-   file is replaced in a derived image or bind-mounted. Image paths assume the install
-   space was extracted from `/opt/autoware` of the official image.
-3. source tree — edit file:line and rebuild the package.
+2. source tree — edit file:line and rebuild the package (when Autoware was read from source).
+3. Docker image — files in the image do not persist edits (D13), so the file is replaced in a
+   derived image or bind-mounted. Image paths assume the official image's `/opt/autoware`
+   with one folder per package (`<pkg>/share/<pkg>/…`); read from source, the path is derived
+   from the package that installs the file.
 """
 from __future__ import annotations
 
@@ -27,6 +28,17 @@ def _launch_cmd(graph: Graph) -> str:
     if graph.meta.entry_launch and graph.meta.entry_package:
         return f"ros2 launch {graph.meta.entry_package} {PurePosixPath(graph.meta.entry_launch).name}"
     return "ros2 launch <package> <file>"
+
+
+def installed_path(file: str, package: str) -> str:
+    """Where the official image keeps a file of a source package: <prefix>/<pkg>/share/<pkg>/<path in
+    the package>, the package folder being the last one named after it ("" when it is not found)."""
+    parts = PurePosixPath(file).parts
+    if not package or package not in parts:
+        return ""
+    last = len(parts) - 1 - parts[::-1].index(package)
+    inside = "/".join(parts[last + 1:])
+    return f"{IMAGE_PREFIX}/{package}/share/{package}/{inside}" if inside else ""
 
 
 def override_routes(prm: Param, graph: Graph) -> list[dict[str, str]]:
@@ -55,6 +67,11 @@ def override_routes(prm: Param, graph: Graph) -> list[dict[str, str]]:
         })
     if graph.meta.layout == "install":
         image_path = f"{IMAGE_PREFIX}/{file}"
+    else:
+        build = f"colcon build --packages-select {prm.package}" if prm.package else "colcon build"
+        routes.append({"route": "source edit", "how": f"edit {at}, then {build}"})
+        image_path = installed_path(file, prm.package)  # for Autoware run from the official image
+    if image_path:
         routes.append({
             "route": "Docker image (derived image)",
             "how": f"edit a copy of {at}; in your Dockerfile: COPY your_copy {image_path}",
@@ -63,9 +80,6 @@ def override_routes(prm: Param, graph: Graph) -> list[dict[str, str]]:
             "route": "Docker run (bind mount)",
             "how": f"docker run … -v $PWD/your_copy:{image_path}:ro …",
         })
-    else:
-        build = f"colcon build --packages-select {prm.package}" if prm.package else "colcon build"
-        routes.append({"route": "source edit", "how": f"edit {at}, then {build}"})
     return routes
 
 

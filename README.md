@@ -12,7 +12,7 @@ Autoware's interfaces onto a simulator (e.g. CARLA) or real hardware.
 
 | | Works with | Tested on |
 |---|---|---|
-| Autoware | **1.9.0** (its release data is included); other releases load, with warnings | 1.9.0 |
+| Autoware | **1.9.0** (the newest release) and **1.8.0**; other releases load, with warnings | both, every week in CI (read from source); 1.9.0 also from its image |
 | Python | 3.10 – 3.13 | 3.10, 3.12, 3.13: the test suite in CI on Linux, macOS and Windows |
 | Offline mode | Linux, Windows, macOS (pure Python) | Ubuntu 24.04 by hand; Windows and macOS through the test suite in CI |
 | Online mode | Linux with Docker Engine; Windows and macOS (Docker Desktop) only with `--like` | Ubuntu 24.04, Docker 29 |
@@ -21,7 +21,7 @@ Autoware's interfaces onto a simulator (e.g. CARLA) or real hardware.
 
 **Not tested yet:** Windows and macOS by hand (only CI) · a Humble, Kilted or Rolling Autoware ·
 `--native` on a real host-built Autoware (only a stand-in) · Online mode on Windows and macOS
-(Docker Desktop, `--like` only) · Zenoh · the "lidar + 3 cameras" load comparison on a full Autoware.
+(Docker Desktop, `--like` only) · the Humble images of 1.8.0 and 1.9.0 · Zenoh · the "lidar + 3 cameras" load comparison on a full Autoware.
 The installer is tested on Ubuntu 22.04 and 24.04, Debian 12 and Fedora 41 (fresh containers).
 
 ![Offline mode: search a topic and open the next level; Online mode: the Live dashboard finds the root of a rate drop](assets/adviewer-demo.gif)
@@ -66,9 +66,11 @@ mkdir ~/aw-project && cd ~/aw-project
 | Your own Autoware image | `adviewer init`<br>`adviewer extract --image <your-image>`<br>`adviewer fetch-source` | — |
 | Autoware already on disk | `adviewer init --install-space <install-dir> --source <src-dir>` | — |
 
-For Autoware 1.9.0 the first two rows give the same graph (the same nodes, topics, connections
-and parameters). You should see `source ready in …` and, after `extract`, `install space ready
-in … (N files)`. `extract` checks Docker and the free disk space before it downloads anything.
+The first two rows give the same graph (the same nodes, topics, connections and parameters;
+checked on 1.9.0). adviewer takes the newest Autoware release it knows; for another one, start with
+`adviewer init --release 1.8.0` (with `--from-source` for the first row). You should see
+`source ready in …` and, after `extract`, `install space ready in … (N files)`. `extract` checks
+Docker and the free disk space before it downloads anything.
 
 **4. Open it:**
 
@@ -208,8 +210,20 @@ ADVIEWER_E2E=1 pytest tests/e2e                       # Online mode end to end (
   `src/adviewer/ui/static/`; commit that build (users need no Node.js).
 - The probe (C++ in `src/adviewer/probe/cpp/`): a change to its image bumps `PROBE_VERSION` in
   `src/adviewer/probe_launch.py` and the `adviewer.probe` label in its Dockerfile.
-- A new Autoware release: add `src/adviewer/data/autoware-<release>/`; the schemas in
-  `src/adviewer/data/schema/` check it. Verify every fact in that release's source.
+- **A new Autoware release.** When Autoware publishes one, the weekly CI opens an issue
+  "Autoware X: add its release data". Add `src/adviewer/data/autoware-X/`, starting from the newest
+  release's folder:
+  1. `release.yaml`: `release`, `image` (and `image_download_gb` from the registry), `detect`
+     (the version in `autoware_launch/package.xml` at that tag), `source_repos` from Autoware's
+     `repositories/autoware.repos` at that tag.
+  2. `adviewer fetch-source --release X --out /tmp/aw-X/src`.
+  3. `adviewer layer-table --source-root /tmp/aw-X/src --release X` (the copied `layers.yaml`
+     keeps its hand-written name rules).
+  4. `mrm.yaml` and `topic_params.yaml` cite file:line: check each one in X's source (where the file
+     did not change, a `diff` against the previous release's is enough); `subsystems.yaml` topics must
+     have a publisher; `aliases.yaml` usually stays.
+  5. `ADVIEWER_AUTOWARE_RELEASE=X ADVIEWER_AUTOWARE_TREE=/tmp/aw-X pytest tests/test_acceptance_real.py`
+     must pass; add X to the compatibility table. From then on the weekly CI checks X too.
 - Releases (maintainer): set `__version__` in `src/adviewer/__init__.py` on `dev`, open a pull request
   `dev` → `main`, merge it when CI is green, then tag `main` with `v<version>`; the release workflow
   checks, builds and publishes it.

@@ -49,7 +49,7 @@ def check_docker(
     (it reads an extracted install space), so it is a warning unless `online`."""
     releases = available_releases()
     wanted = {r.release: r.load("release.yaml").get("image", "") for r in releases}
-    pull = next(iter(wanted.values()), f"{OFFICIAL_REPO}:universe-cuda-jazzy-<release>")
+    pull = list(wanted.values())[-1] if wanted else f"{OFFICIAL_REPO}:universe-cuda-jazzy-<release>"  # the newest
     # Offline mode can read Autoware's source without Docker; Online mode and `extract` need it
     need = "error" if online else "warn"
     offline = "" if online else "  — or, for Offline mode without Docker: adviewer init --from-source"
