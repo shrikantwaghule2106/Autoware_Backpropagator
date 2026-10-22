@@ -3,6 +3,7 @@ Each case is a bug or a setup found by hand before (D32–D34), kept here so CI 
 import json
 import os
 import random
+import re
 import signal
 import subprocess
 import sys
@@ -26,7 +27,15 @@ LOOPBACK_CYCLONE = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 def sh(*cmd: str, check: bool = True, timeout: float = 600, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(list(cmd), capture_output=True, text=True, check=check, timeout=timeout, env=env)
+    """Run a command; when it fails, the error says why (the failing line first, the end of the output after)."""
+    done = subprocess.run(list(cmd), check=False, capture_output=True, text=True, timeout=timeout, env=env)
+    if check and done.returncode:
+        lines = (done.stdout + done.stderr).splitlines()
+        why = next((ln for ln in reversed(lines) if re.search(r"error|E: |failed|denied|not found|unable", ln, re.IGNORECASE)),
+                   lines[-1] if lines else "no output")
+        tail = "\n".join(lines[-40:])
+        raise AssertionError(f"{' '.join(cmd[:4])} … failed (exit {done.returncode}): {why.strip()}\n{tail}")
+    return done
 
 
 @pytest.fixture(scope="session")
