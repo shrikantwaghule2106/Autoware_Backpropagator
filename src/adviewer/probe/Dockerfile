@@ -9,8 +9,10 @@ LABEL adviewer.probe="3"
 SHELL ["/bin/bash", "-c"]
 RUN test -n "$ROS_DISTRO" || { echo "the base image must be a ROS 2 image (ROS_DISTRO is not set)"; exit 1; }
 # Autoware runs on CycloneDDS and `adviewer probe run` selects it; ros:jazzy ships only Fast DDS
-RUN dpkg -s "ros-$ROS_DISTRO-rmw-cyclonedds-cpp" >/dev/null 2>&1 || { apt-get update \
- && apt-get install -y --no-install-recommends "ros-$ROS_DISTRO-rmw-cyclonedds-cpp" && rm -rf /var/lib/apt/lists/*; }
+# (downloads retried: a brief network or package-server hiccup should not fail the build)
+RUN dpkg -s "ros-$ROS_DISTRO-rmw-cyclonedds-cpp" >/dev/null 2>&1 || { apt-get -o Acquire::Retries=3 update \
+ && apt-get -o Acquire::Retries=3 install -y --no-install-recommends "ros-$ROS_DISTRO-rmw-cyclonedds-cpp" \
+ && rm -rf /var/lib/apt/lists/*; }
 WORKDIR /ws
 COPY cpp /ws/src/adviewer_probe
 RUN . "/opt/ros/$ROS_DISTRO/setup.sh" \

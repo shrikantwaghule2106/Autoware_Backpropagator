@@ -10,7 +10,7 @@ permissions: { contents: read }
 
 jobs:
   releases:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       list: ${{ steps.list.outputs.list }}
     steps:
@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         release: ${{ fromJSON(needs.releases.outputs.list) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
@@ -48,7 +48,7 @@ jobs:
 
   watch:
     name: a new Autoware release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: { contents: read, issues: write }
     steps:
       - uses: actions/checkout@v7

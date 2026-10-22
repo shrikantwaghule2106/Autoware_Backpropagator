@@ -1,6 +1,8 @@
 # Lint, tests and type checks on Linux, Windows and macOS (the core is pure Python); the UI build;
 # the C++ probe built and measuring on five ROS 2 distributions; Online mode end to end in Docker.
 # Weekly as well, to catch changes in the ROS images and in dependencies.
+# Jobs run on ubuntu-24.04, the version adviewer is tested on, rather than ubuntu-latest, which moves
+# to a new Ubuntu now and then; the test matrix keeps its names (the rulesets require them).
 name: ci
 on:
   push:
@@ -18,7 +20,7 @@ jobs:
   pr-target:
     name: pull requests go to dev
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: only this repository's dev branch is merged into main
         if: github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository
@@ -28,7 +30,7 @@ jobs:
       - run: echo "dev into main"
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
@@ -70,7 +72,7 @@ jobs:
           coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
 
   ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults: { run: { working-directory: ui } }
     steps:
       - uses: actions/checkout@v7
@@ -89,7 +91,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [humble, jazzy, kilted, lyrical, rolling]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
@@ -101,7 +103,7 @@ jobs:
 
   online:
     name: Online mode end to end (Docker)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6

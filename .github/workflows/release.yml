@@ -10,7 +10,7 @@ permissions: { contents: read }
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
@@ -37,7 +37,7 @@ jobs:
 
   github-release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: { contents: write }
     steps:
       - uses: actions/checkout@v7
@@ -50,7 +50,7 @@ jobs:
   pypi:
     needs: build
     if: ${{ vars.PUBLISH_PYPI == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: pypi
     permissions: { id-token: write }
     steps:
