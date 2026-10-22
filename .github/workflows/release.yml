@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12" }
       - name: the tag is the package version
@@ -32,7 +32,7 @@ jobs:
           python -m venv /tmp/clean && /tmp/clean/bin/pip install dist/*.whl
           /tmp/clean/bin/adviewer --version
           /tmp/clean/bin/adviewer --help > /dev/null
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: dist, path: dist/ }
 
   github-release:
@@ -40,8 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { contents: write }
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with: { name: dist, path: dist/ }
       - name: publish the GitHub release
         env: { GH_TOKEN: "${{ github.token }}" }
@@ -54,6 +54,6 @@ jobs:
     environment: pypi
     permissions: { id-token: write }
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: dist, path: dist/ }
       - uses: pypa/gh-action-pypi-publish@release/v1

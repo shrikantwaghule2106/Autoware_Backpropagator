@@ -30,11 +30,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -54,7 +54,7 @@ jobs:
         python: ["3.10", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "${{ matrix.python }}", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
@@ -73,8 +73,8 @@ jobs:
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: ui } }
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "22", cache: npm, cache-dependency-path: ui/package-lock.json }
       - run: npm ci
       - run: npm run typecheck
@@ -91,7 +91,7 @@ jobs:
         distro: [humble, jazzy, kilted, lyrical, rolling]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
@@ -103,7 +103,7 @@ jobs:
     name: Online mode end to end (Docker)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
