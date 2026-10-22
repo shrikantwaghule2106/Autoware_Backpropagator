@@ -1,6 +1,8 @@
 # Lint, tests and type checks on Linux, Windows and macOS (the core is pure Python); the UI build;
 # the C++ probe built and measuring on five ROS 2 distributions; Online mode end to end in Docker.
 # Weekly as well, to catch changes in the ROS images and in dependencies.
+# Jobs run on ubuntu-24.04, the version adviewer is tested on, rather than ubuntu-latest, which moves
+# to a new Ubuntu now and then; the test matrix keeps its names (the rulesets require them).
 name: ci
 on:
   push:
@@ -18,7 +20,7 @@ jobs:
   pr-target:
     name: pull requests go to dev
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: only this repository's dev branch is merged into main
         if: github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository
@@ -28,13 +30,13 @@ jobs:
       - run: echo "dev into main"
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -54,7 +56,7 @@ jobs:
         python: ["3.10", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "${{ matrix.python }}", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
@@ -70,11 +72,11 @@ jobs:
           coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
 
   ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults: { run: { working-directory: ui } }
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "22", cache: npm, cache-dependency-path: ui/package-lock.json }
       - run: npm ci
       - run: npm run typecheck
@@ -89,9 +91,9 @@ jobs:
       fail-fast: false
       matrix:
         distro: [humble, jazzy, kilted, lyrical, rolling]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
@@ -101,9 +103,9 @@ jobs:
 
   online:
     name: Online mode end to end (Docker)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with: { python-version: "3.12", cache: pip, cache-dependency-path: pyproject.toml }
       - run: python -m pip install -e ".[dev]"
